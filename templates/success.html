@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sucesso!</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mt-5">
+  <section id="home d-flex">
+    <div class="justify-content-center align-items-center text-center">
+      <h1 class="text-center"><i class="bi bi-columns me-2"></i>Limpar Colunas Repetidas</h1>
+      <div class="main-form w-75 rounded p-5 mx-auto" style="background-color: #eaeaea">
+        <h2 class="text-success"><i class="me-2 bi bi-check-circle-fill"></i>Sucesso!</h2>
+        <p>Banco de dados atualizado, <span class="fw-bold">{{ rows_affected }}</span> linhas
+          afetadas.</p>
+        <a target="_blank" href={{ url_for('log', intent="view") }}><i class="bi bi-info-circle"></i>Acessar log de
+          mudanças</a>
+        <a class="ms-3" target="_blank" href={{ url_for('log', intent="download") }}><i
+          class="bi bi-cloud-arrow-down-fill"></i>Baixar arquivo de
+          log</a>
+        <hr>
+        <div class="">
+          <a class="text-decoration-none" href={{ url_for('tables') }}>
+            <button class="ms-auto w-25 btn btn-outline-success"><i class="bi bi-arrow-left-circle-fill me-1"></i>Lista de tabelas</button>
+          </a>
+          <a class="text-decoration-none ms-2" href={{ url_for('home') }}>
+            <button class="w-25 btn btn-outline-success"><i class="bi bi-house-door-fill me-1"></i>Início</button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</body>
+</html>

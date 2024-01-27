@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+  <link rel="stylesheet" href="../static/css/ssms.min.css">
   <style>
       .table-scroll {
           display: block;
@@ -50,7 +52,8 @@
           </tbody>
         </table>
       </div>
-      <button type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-outline-success w-100 mt-2">
+      <button type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+              class="btn btn-outline-success w-100 mt-2">
         Aplicar mudanças<i class="bi bi-database ms-1"></i>
       </button>
 
@@ -60,16 +63,20 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="staticBackdropLabel"><span class="text-success fw-bold">{{ count if count else 0 }}</span> mudanças serão aplicadas</h1>
+              <h1 class="modal-title fs-5" id="staticBackdropLabel"><span
+                class="text-success fw-bold">{{ count if count else 0 }}</span> mudanças serão aplicadas</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <p>A seguinte query SQL será executada no banco de dados:</p>
-
+              <pre><code class="language-tsql">{{ sql_statements }}</code></pre>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-              <button type="button" class="btn btn-primary">Confirmar</button>
+              <form method="post" action={{ url_for('execute_sql') }}>
+                <input type="hidden" name="sql_statements" value="{{ sql_statements }}">
+                <button type="submit" class="btn btn-primary">Confirmar</button>
+              </form>
             </div>
           </div>
         </div>
@@ -80,5 +87,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../static/js/tsql.min.js"></script>
+<script>hljs.highlightAll();</script>
 </body>
 </html>

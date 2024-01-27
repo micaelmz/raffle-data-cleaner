@@ -14,12 +14,12 @@
     <div class="main-form w-75 rounded p-5 mx-auto" style="background-color: #eaeaea">
       <h4>Ocorreu um erro</h4>
       {% for error in errors %}
-        {#          <p class="text-danger">{{ error }}</p>#}
         <div class="alert alert-danger d" role="alert">
           <i class="bi bi-exclamation-triangle-fill"></i>
           {{ error }}
         </div>
       {% endfor %}
+      <hr>
       <a href={{ url_for('tables') }}>
         <button class="btn btn-outline-success w-100">Voltar</button>
       </a>

@@ -118,11 +118,13 @@ def review_cleaning():
     # Variaveis de controle
     all_numbers = set()
     updated_column_with_unique_values = []
+    rows_with_repeated_numbers = set()
 
     # Variaveis de log
     original_number_owner_dict = {}
     original_number_owner = []
-    rows_with_repeated_numbers = []
+    repeated_numbers_occurrence = []
+    sql_statements = []
 
     # Carrega a tabela do banco de dados como um dataframe do pandas
     df = pd.read_sql(f'SELECT * FROM {table_name}', conn)
@@ -138,6 +140,7 @@ def review_cleaning():
         # Itera sobre os valores da lista, e limpa os espaços e colchetes
         for value in list_of_values:
             value = value.replace(' ', '').replace('[', '').replace(']', '').replace("'", '')
+            value = int(value)  # Converte o valor para inteiro
 
             # Caso seja um valor inédito
             if value not in all_numbers:
@@ -150,15 +153,18 @@ def review_cleaning():
                 })  # Registra no log o dono do número
             # Caso seja um valor repetido
             else:
-                rows_with_repeated_numbers.append({
+                rows_with_repeated_numbers.add(index + 1)
+                repeated_numbers_occurrence.append({
                     "linha_com_numero_repetido": index + 1,
                     "numero": value,
                     "linha_original_do_numero": original_number_owner_dict[value]
                 })  # Registra no log a linha, o número e o dono do número
                 # Ignora o valor repetido e não adiciona na lista
-
         updated_column_with_unique_values.append(
             new_list)  # Adiciona a lista dos numero unicos que o usuario tem na coluna
+
+    for row in rows_with_repeated_numbers:
+        sql_statements.append(f'UPDATE {table_name} SET {column_name} = "{updated_column_with_unique_values[row - 1]}" WHERE JSON_CONTAINS({column_name}, "{df[column_name][row - 1]}")')
 
     # Atualiza a coluna alvo da tabela com os valores unicos atualizados
     df[column_name] = updated_column_with_unique_values
@@ -169,16 +175,46 @@ def review_cleaning():
             "nome_da_tabela": table_name,
             "nome_da_coluna": column_name,
             "numeros_repetidos": {
-                "total": len(rows_with_repeated_numbers),
-                "ocorrencias": rows_with_repeated_numbers
+                "total": len(repeated_numbers_occurrence),
+                "ocorrencias": repeated_numbers_occurrence
             },
-            "donos_originais_dos_numeros": original_number_owner
+            "donos_originais_dos_numeros": original_number_owner,
+            "sql_statements": sql_statements
         }, f)
 
     return render_template('confirmation.html',
-                           table_name=table_name, column_name=column_name, count=len(rows_with_repeated_numbers),
-                           matrix=df.to_numpy(), columns=df.columns.values.tolist()
-                           )
+                           table_name=table_name, column_name=column_name, count=len(repeated_numbers_occurrence),
+                           matrix=df.to_numpy(), columns=df.columns.values.tolist(),
+                           sql_statements="\n".join(sql_statements))
+
+
+@app.route('/execute_sql', methods=['POST'])
+def execute_sql():
+    if not session.get('username'):
+        return redirect('/')
+
+    try:
+        conn = connect_to_db()
+    except Exception as e:
+        session.clear()
+        flash("Erro ao conectar ao banco de dados")
+        flash(str(e))
+        return redirect('/error')
+
+    sql_statements = request.form.get('sql_statements').split('\n')
+
+    rows_affected = 0
+    try:
+        for sql_statement in sql_statements:
+            result = conn.execute(sqlalchemy.text(sql_statement))
+            rows_affected += result.rowcount
+        conn.commit()
+    except Exception as e:
+        flash("Erro ao executar os comandos SQL")
+        flash(str(e))
+        return redirect('/error')
+
+    return render_template('success.html', rows_affected=rows_affected)
 
 
 @app.route('/log')
