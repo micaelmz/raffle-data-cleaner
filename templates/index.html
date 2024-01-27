@@ -10,18 +10,18 @@
 <body>
 <div class="container mt-5">
   <section id="home d-flex ">
-    <h1 class="text-center">Limpar Colunas Repetidas</h1>
+    <h1 class="text-center"><i class="bi bi-columns me-2"></i>Limpar Colunas Repetidas</h1>
     <div class="main-form w-75 rounded p-5 mx-auto" style="background-color: #eaeaea">
       <h4>Logar no banco de dados</h4>
       <form method="post" action={{ url_for("login") }}>
         <div class="inputs my-3">
           <div class="input-group mb-1">
-            <select name="sql-dialect" class="form-select">
+            <select name="db_engine" class="form-select">
               <option selected disabled>Conexão</option>
               <option value="1">MySQL</option>
               <option value="2">PostgreSQL</option>
             </select>
-            <input name="database" type="text" class="form-control" placeholder="Banco de dados">
+            <input name="database_name" type="text" class="form-control" placeholder="Banco de dados">
           </div>
 
           <div class="input-group mb-1">
@@ -29,7 +29,7 @@
             <span class="input-group-text">:</span>
             <input name="password" type="password" class="form-control" placeholder="Senha">
             <span class="input-group-text">@</span>
-            <input name="server" type="text" class="form-control" placeholder="Servidor">
+            <input name="server_address" type="text" class="form-control" placeholder="Servidor">
           </div>
         </div>
         <button type="submit" class="btn btn-outline-success w-100"><i class="bi bi-database me-1"></i>Conectar</button>
