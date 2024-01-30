@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, request, jsonify, make_response, session, redirect, send_file, flash, \
     get_flashed_messages
 import flask
@@ -7,6 +9,10 @@ import json
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "superscretekey"
+
+appdata_path = os.path.join(os.getenv('APPDATA'), 'lcr')
+if not os.path.exists(appdata_path):
+    os.makedirs(appdata_path)
 
 
 def connect_to_db() -> sqlalchemy.engine.Connection:
@@ -90,7 +96,7 @@ def tables():
 
     for table in tables_names:
         table_name = table[0]  # table is a tuple
-        columns = conn.execute(sqlalchemy.text(f'SHOW COLUMNS FROM {table_name}')).fetchall()
+        columns = conn.execute(sqlalchemy.text(f"SHOW COLUMNS FROM `{table_name}`")).fetchall()
         tables_and_its_columns[table_name] = [column[0] for column in columns]
     return render_template('tables.html', tables_and_its_columns=tables_and_its_columns)
 
@@ -139,8 +145,8 @@ def review_cleaning():
 
         # Itera sobre os valores da lista, e limpa os espaços e colchetes
         for value in list_of_values:
-            value = value.replace(' ', '').replace('[', '').replace(']', '').replace("'", '')
-            value = int(value)  # Converte o valor para inteiro
+            value = value.replace(' ', '').replace('[', '').replace(']', '').replace("'", '').replace('"', '')
+            value = str(value)
 
             # Caso seja um valor inédito
             if value not in all_numbers:
@@ -161,16 +167,16 @@ def review_cleaning():
                 })  # Registra no log a linha, o número e o dono do número
                 # Ignora o valor repetido e não adiciona na lista
         updated_column_with_unique_values.append(
-            new_list)  # Adiciona a lista dos numero unicos que o usuario tem na coluna
+            json.dumps(new_list))  # Adiciona a lista dos numero unicos que o usuario tem na coluna
 
     for row in rows_with_repeated_numbers:
-        sql_statements.append(f'UPDATE {table_name} SET {column_name} = "{updated_column_with_unique_values[row - 1]}" WHERE JSON_CONTAINS({column_name}, "{df[column_name][row - 1]}")')
+        sql_statements.append(f"UPDATE {table_name} SET {column_name} = '{str(updated_column_with_unique_values[row - 1]).replace(', ', ',')}' WHERE JSON_CONTAINS({column_name}, '{df[column_name][row - 1]}')")
 
     # Atualiza a coluna alvo da tabela com os valores unicos atualizados
     df[column_name] = updated_column_with_unique_values
 
     # Salva os dados de log em um arquivo json
-    with open('log.json', 'w') as f:
+    with open(os.path.join(appdata_path, 'log.json'), 'w') as f:
         json.dump({
             "nome_da_tabela": table_name,
             "nome_da_coluna": column_name,
@@ -202,8 +208,8 @@ def execute_sql():
         return redirect('/error')
 
     sql_statements = request.form.get('sql_statements').split('\n')
-
     rows_affected = 0
+
     try:
         for sql_statement in sql_statements:
             result = conn.execute(sqlalchemy.text(sql_statement))
@@ -219,8 +225,9 @@ def execute_sql():
 
 @app.route('/log')
 def log():
-    return send_file('log.json', as_attachment=(request.args.get('intent') == 'download'))
+    return send_file(os.path.join(appdata_path, 'log.json'), as_attachment=(request.args.get('intent') == 'download'))
 
 
 if __name__ == '__main__':
-    app.run()
+    os.system('start http://localhost:5000')
+    app.run(host='0.0.0.0', port=5000)
